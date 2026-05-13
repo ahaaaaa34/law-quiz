@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>保健 法律クイズ</title>
+  <title>保健 児童虐待クイズ</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -235,8 +235,8 @@
 <body>
 
 <header>
-  <h1>⚖️ 保健 法律クイズ</h1>
-  <p>ライフステージと健康 / 結婚生活と健康</p>
+  <h1>👶 保健 児童虐待クイズ</h1>
+  <p>結婚生活と健康 — 児童虐待の種類</p>
 </header>
 <div id="progress-wrap"><div id="progress-bar"></div></div>
 
@@ -262,13 +262,11 @@
 
   <!-- 法律まとめ -->
   <div id="law-list">
-    <h3>📋 法律まとめ</h3>
-    <div class="law-item"><span class="law-tag">母子保健法</span><span class="law-desc">乳幼児期・学童期の子どもと母親の健康を守る法律</span></div>
-    <div class="law-item"><span class="law-tag">児童福祉法</span><span class="law-desc">子どもの福祉を保障するための基本的な法律</span></div>
-    <div class="law-item"><span class="law-tag">学校保健安全法</span><span class="law-desc">学校における児童・生徒の健康の保持増進と安全確保を図る法律</span></div>
-    <div class="law-item"><span class="law-tag">成育基本法</span><span class="law-desc">2018年制定。妊娠・出産から子どもが成人するまで切れ目なく支援する法律</span></div>
-    <div class="law-item"><span class="law-tag">高齢者の医療の確保に関する法律</span><span class="law-desc">高齢者の医療を確保するための法律（後期高齢者医療制度など）</span></div>
-    <div class="law-item"><span class="law-tag">介護保険法</span><span class="law-desc">高齢者が介護サービスを受けられるよう支援する法律</span></div>
+    <h3>📋 児童虐待の種類まとめ</h3>
+    <div class="law-item"><span class="law-tag">身体的虐待</span><span class="law-desc">殴る、蹴る、つねる、激しく揺さぶる、やけどを負わせるなどの暴行を加えること。</span></div>
+    <div class="law-item"><span class="law-tag">心理的虐待</span><span class="law-desc">言葉による脅し、無視、兄弟姉妹間の差別、子どもの前での配偶者への暴力などにより著しい心理的虐待を与えること。</span></div>
+    <div class="law-item"><span class="law-tag">性的虐待</span><span class="law-desc">性行為の強要、わいせつな行為などをすること。</span></div>
+    <div class="law-item"><span class="law-tag">ネグレクト</span><span class="law-desc">保護の怠慢・養育の放棄。病院に連れて行かない、食事を与えない、車のなかに放置するなど保護者としての監護を著しく怠ること。</span></div>
   </div>
 
   <div id="result-screen">
@@ -285,24 +283,42 @@
 const LAWS = ['母子保健法','児童福祉法','学校保健安全法','成育基本法','高齢者の医療の確保に関する法律','介護保険法'];
 
 const questions = [
-  { section: '教科書 p.77', type: 'text',
-    q: '乳幼児期や学童期などの子どもの健康や福祉に対しては、（　）、児童福祉法、学校保健安全法などさまざまな法律がつくられてきました。',
-    ans: '母子保健法' },
-  { section: '教科書 p.77', type: 'text',
-    q: '乳幼児期や学童期などの子どもの健康や福祉に対しては、母子保健法、（　）、学校保健安全法などさまざまな法律がつくられてきました。',
-    ans: '児童福祉法' },
-  { section: '教科書 p.77', type: 'text',
-    q: '乳幼児期や学童期などの子どもの健康や福祉に対しては、母子保健法、児童福祉法、（　）などさまざまな法律がつくられてきました。',
-    ans: '学校保健安全法' },
-  { section: '教科書 p.77', type: 'text',
-    q: '2018年には（　）ができ、妊娠・出産から子どもが生まれ育ち成人するまで、切れ目のない支援のための環境整備をめざすことになりました。',
-    ans: '成育基本法' },
-  { section: '教科書 p.77', type: 'text',
-    q: '高齢者に対しては、（　）、介護保険法などがあり、医療や介護が提供されています。',
-    ans: '高齢者の医療の確保に関する法律' },
-  { section: '教科書 p.77', type: 'text',
-    q: '高齢者に対しては、高齢者の医療の確保に関する法律、（　）などがあり、医療や介護が提供されています。',
-    ans: '介護保険法' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '殴る、蹴る、つねる、激しく揺さぶる、やけどを負わせるなどの暴行を加えること。\n→ これは（　）虐待である。',
+    ans: '身体的' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '言葉による脅し、無視、兄弟姉妹間の差別、子どもの前での配偶者への暴力などにより著しい心理的虐待を与えること。\n→ これは（　）虐待である。',
+    ans: '心理的' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '性行為の強要、わいせつな行為などをすること。\n→ これは（　）虐待である。',
+    ans: '性的' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '病院に連れて行かない、学校に行かせない、食事を与えない、車のなかに放置する、衣類を長期にわたって着替えさせないなど、保護者としての監護を著しく怠ること。\n→ これを（　）という。',
+    ans: 'ネグレクト' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: 'ネグレクトとは、保護の（　）・養育の放棄のことである。',
+    ans: '怠慢' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '（　）的虐待：殴る、蹴る、つねる、激しく揺さぶる、やけどを負わせるなどの暴行を加えること。',
+    ans: '身体' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '（　）的虐待：言葉による脅し、無視、兄弟姉妹間の差別、子どもの前での配偶者への暴力などにより著しいダメージを与えること。',
+    ans: '心理' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '（　）的虐待：性行為の強要、わいせつな行為などをすること。',
+    ans: '性' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '（　）：病院に連れて行かない、学校に行かせない、食事を与えないなど、保護者としての監護を著しく怠ること。',
+    ans: 'ネグレクト' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '子どもの前で配偶者に暴力をふるうことは（　）的虐待にあたる。',
+    ans: '心理' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: '車のなかに放置する、衣類を長期にわたって着替えさせないなどの行為は（　）にあたる。',
+    ans: 'ネグレクト' },
+  { section: '教科書 p.89 資料3', type: 'text',
+    q: 'やけどを負わせることは（　）的虐待にあたる。',
+    ans: '身体' },
 ];
 
 let idx = 0, correct = 0, answered = false, order = [], showing = false;
@@ -395,7 +411,7 @@ document.getElementById('ans-input').addEventListener('input', () => {
   const inp = document.getElementById('ans-input');
   const uv = normalize(inp.value);
   const cv = normalize(q.ans);
-  const ok = uv === cv || (cv.includes(uv) && uv.length >= cv.length - 1 && uv.length >= 2);
+  const ok = uv === cv;
   if (ok) {
     answered = true; correct++;
     inp.classList.add('correct-input'); inp.disabled = true;
