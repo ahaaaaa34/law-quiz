@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>保健 法律クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background: #f0f4ff;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a3a7c, #2e5fc9);
+      color: white;
+      padding: 18px 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 1.2rem; }
+    header p  { font-size: 0.8rem; opacity: 0.8; margin-top: 4px; }
+
+    #progress-wrap { background: #d0d8f0; height: 6px; }
+    #progress-bar  {
+      height: 6px;
+      background: linear-gradient(90deg, #1a3a7c, #2e5fc9);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 28px 16px 40px;
+      width: 100%;
+      flex: 1;
+    }
+
+    #counter {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #999;
+      margin-bottom: 18px;
+    }
+
+    #q-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-left: 5px solid #2e5fc9;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    #section-badge {
+      display: inline-block;
+      background: #e6ebff;
+      color: #1a3a7c;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 100px;
+      width: fit-content;
+    }
+
+    #q-text {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      font-weight: bold;
+    }
+
+    /* テキスト入力 */
+    #input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #ans-input {
+      flex: 1;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      min-width: 0;
+    }
+    #ans-input:focus { border-color: #2e5fc9; }
+    #ans-input.correct-input { border-color: #2e9e5b; background: #edfaf3; }
+    #ans-input.wrong-input {
+      border-color: #e04040; background: #fff0f0;
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    #show-ans-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1.5px solid #bbb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      color: #777;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    #show-ans-btn:hover { border-color: #2e5fc9; color: #2e5fc9; background: #eef1ff; }
+
+    /* 選択肢 */
+    #choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .choice-btn {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      line-height: 1.5;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: #2e5fc9; background: #eef1ff; }
+    .choice-btn.correct-choice { border-color: #2e9e5b; background: #edfaf3; color: #1a6e3a; font-weight: bold; }
+    .choice-btn.wrong-choice   { border-color: #e04040; background: #fff0f0; color: #b02020; }
+
+    /* ○× */
+    #ox-row { display: flex; gap: 16px; justify-content: center; }
+    .ox-btn {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+      background: white;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: bold;
+    }
+    .ox-btn:hover { background: #eef1ff; border-color: #2e5fc9; transform: scale(1.05); }
+    .ox-btn.selected-maru  { background: #2e9e5b; border-color: #2e9e5b; color: white; }
+    .ox-btn.selected-batsu { background: #e04040; border-color: #e04040; color: white; }
+
+    /* フィードバック */
+    #feedback {
+      font-size: 1.1rem;
+      font-weight: bold;
+      min-height: 32px;
+      text-align: center;
+    }
+    #feedback.correct-fb { color: #2e9e5b; }
+    #feedback.wrong-fb   { color: #e04040; }
+
+    /* 次へ */
+    #next-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a3a7c, #2e5fc9);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(46,95,201,0.3);
+      transition: transform 0.1s, opacity 0.2s;
+      margin-top: 8px;
+    }
+    #next-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    #next-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+
+    /* 結果 */
+    #result-screen {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 36px 24px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    #result-screen h2 { font-size: 1.4rem; color: #1a3a7c; margin-bottom: 16px; }
+    #result-score { font-size: 3.5rem; font-weight: bold; color: #2e5fc9; line-height: 1; }
+    #result-sub   { font-size: 1rem; color: #888; margin: 8px 0 20px; }
+    #result-bar-wrap { background: #d0d8f0; border-radius: 100px; height: 14px; margin-bottom: 20px; overflow: hidden; }
+    #result-bar { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #1a3a7c, #2e5fc9); width: 0%; transition: width 1s ease; }
+    #result-msg { font-size: 1.05rem; margin-bottom: 24px; }
+
+    .btn-retry {
+      display: block; width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #1a3a7c, #2e5fc9);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(46,95,201,0.3);
+    }
+
+    /* 法律まとめカード */
+    #law-list {
+      margin-top: 28px;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    #law-list h3 { color: #1a3a7c; font-size: 0.95rem; margin-bottom: 14px; border-bottom: 2px solid #e6ebff; padding-bottom: 8px; }
+    .law-item { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+    .law-tag {
+      background: #e6ebff; color: #1a3a7c; font-size: 0.72rem;
+      font-weight: bold; padding: 3px 8px; border-radius: 6px;
+      white-space: nowrap; margin-top: 2px; flex-shrink: 0;
+    }
+    .law-desc { font-size: 0.88rem; line-height: 1.6; color: #444; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚖️ 保健 法律クイズ</h1>
+  <p>ライフステージと健康 / 結婚生活と健康</p>
+</header>
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<div class="container">
+  <div id="counter"></div>
+
+  <div id="q-card">
+    <div id="section-badge"></div>
+    <div id="q-text"></div>
+    <div id="input-row"  style="display:none">
+      <input type="text" id="ans-input" placeholder="答えを入力" autocomplete="off" />
+      <button id="show-ans-btn">答えを見る</button>
+    </div>
+    <div id="choices" style="display:none"></div>
+    <div id="ox-row"    style="display:none">
+      <button class="ox-btn" id="btn-maru">○</button>
+      <button class="ox-btn" id="btn-batsu">×</button>
+    </div>
+    <div id="feedback"></div>
+  </div>
+
+  <button id="next-btn" disabled>次の問題 →</button>
+
+  <!-- 法律まとめ -->
+  <div id="law-list">
+    <h3>📋 法律まとめ</h3>
+    <div class="law-item"><span class="law-tag">母子保健法</span><span class="law-desc">乳幼児期・学童期の子どもと母親の健康を守る法律</span></div>
+    <div class="law-item"><span class="law-tag">児童福祉法</span><span class="law-desc">子どもの福祉を保障するための基本的な法律</span></div>
+    <div class="law-item"><span class="law-tag">学校保健安全法</span><span class="law-desc">学校における児童・生徒の健康の保持増進と安全確保を図る法律</span></div>
+    <div class="law-item"><span class="law-tag">成育基本法</span><span class="law-desc">2018年制定。妊娠・出産から子どもが成人するまで切れ目なく支援する法律</span></div>
+    <div class="law-item"><span class="law-tag">高齢者の医療の確保に関する法律</span><span class="law-desc">高齢者の医療を確保するための法律（後期高齢者医療制度など）</span></div>
+    <div class="law-item"><span class="law-tag">介護保険法</span><span class="law-desc">高齢者が介護サービスを受けられるよう支援する法律</span></div>
+  </div>
+
+  <div id="result-screen">
+    <h2>🎉 テスト終了！</h2>
+    <div id="result-score"></div>
+    <div id="result-sub"></div>
+    <div id="result-bar-wrap"><div id="result-bar"></div></div>
+    <div id="result-msg"></div>
+    <button class="btn-retry" onclick="startQuiz()">🔄 もう一度チャレンジ</button>
+  </div>
+</div>
+
+<script>
+const LAWS = ['母子保健法','児童福祉法','学校保健安全法','成育基本法','高齢者の医療の確保に関する法律','介護保険法'];
+
+const questions = [
+  // ── 穴埋め（法律名） ──
+  { section: '穴埋め', type: 'text',
+    q: '乳幼児期・学童期の子どもと母親の健康を守る法律を何というか？',
+    ans: '母子保健法' },
+  { section: '穴埋め', type: 'text',
+    q: '子どもの福祉を保障するための基本的な法律を何というか？',
+    ans: '児童福祉法' },
+  { section: '穴埋め', type: 'text',
+    q: '学校における児童・生徒の健康の保持増進と安全確保を図る法律を何というか？',
+    ans: '学校保健安全法' },
+  { section: '穴埋め', type: 'text',
+    q: '2018年に制定された、妊娠・出産から成人まで切れ目なく支援するための法律を何というか？',
+    ans: '成育基本法' },
+  { section: '穴埋め', type: 'text',
+    q: '後期高齢者医療制度などを定め、高齢者の医療を確保するための法律を何というか？',
+    ans: '高齢者の医療の確保に関する法律' },
+  { section: '穴埋め', type: 'text',
+    q: '高齢者が介護サービスを受けられるよう支援する法律を何というか？',
+    ans: '介護保険法' },
+
+  // ── 選択肢（法律→説明） ──
+  { section: '選択問題', type: 'choice',
+    q: '「母子保健法」が対象とする主なライフステージはどれか？',
+    ans: '乳幼児期・学童期',
+    choices: ['乳幼児期・学童期','青年期・中年期','高年期','思春期のみ'] },
+  { section: '選択問題', type: 'choice',
+    q: '「成育基本法」はいつ制定されたか？',
+    ans: '2018年',
+    choices: ['2000年','2010年','2018年','2022年'] },
+  { section: '選択問題', type: 'choice',
+    q: '妊娠・出産から子どもが成人するまで「切れ目のない支援」を目的としている法律はどれか？',
+    ans: '成育基本法',
+    choices: ['母子保健法','学校保健安全法','成育基本法','介護保険法'] },
+  { section: '選択問題', type: 'choice',
+    q: '健康診断・医療・保健指導をおこなう根拠となっている法律の組み合わせはどれか？',
+    ans: '母子保健法・児童福祉法・学校保健安全法',
+    choices: ['成育基本法・介護保険法','母子保健法・児童福祉法・学校保健安全法','高齢者の医療の確保に関する法律・介護保険法','児童福祉法・成育基本法'] },
+  { section: '選択問題', type: 'choice',
+    q: '高齢者に医療と介護を提供する根拠となっている法律の組み合わせはどれか？',
+    ans: '高齢者の医療の確保に関する法律・介護保険法',
+    choices: ['母子保健法・児童福祉法','学校保健安全法・成育基本法','高齢者の医療の確保に関する法律・介護保険法','成育基本法・介護保険法'] },
+  { section: '選択問題', type: 'choice',
+    q: '「学校保健安全法」の目的として正しいものはどれか？',
+    ans: '学校における児童・生徒の健康保持と安全確保',
+    choices: ['妊婦の健康管理','高齢者の医療費負担軽減','学校における児童・生徒の健康保持と安全確保','介護サービスの提供'] },
+
+  // ── ○× ──
+  { section: '○×問題', type: 'ox',
+    q: '成育基本法は2010年に制定された。',
+    ans: '×' },
+  { section: '○×問題', type: 'ox',
+    q: '母子保健法・児童福祉法・学校保健安全法により、健康診断や保健指導がおこなわれている。',
+    ans: '○' },
+  { section: '○×問題', type: 'ox',
+    q: '介護保険法は高齢者の介護サービスを支援するための法律である。',
+    ans: '○' },
+  { section: '○×問題', type: 'ox',
+    q: '「高齢者の医療の確保に関する法律」は乳幼児期の健康を守る法律である。',
+    ans: '×' },
+  { section: '○×問題', type: 'ox',
+    q: '成育基本法は、妊娠・出産から成人するまで切れ目ない支援の環境整備を目指している。',
+    ans: '○' },
+  { section: '○×問題', type: 'ox',
+    q: '児童福祉法は子どもの福祉を保障するための基本的な法律である。',
+    ans: '○' },
+];
+
+let idx = 0, correct = 0, answered = false, order = [], showing = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.trim().replace(/\s+/g, '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+}
+
+function startQuiz() {
+  idx = 0; correct = 0; answered = false; showing = false;
+  order = shuffle([...Array(questions.length).keys()]);
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('q-card').style.display = 'flex';
+  document.getElementById('counter').style.display = 'block';
+  document.getElementById('next-btn').style.display = 'block';
+  document.getElementById('progress-bar').style.width = '0%';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false; showing = false;
+  const q = questions[order[idx]];
+  const total = questions.length;
+
+  document.getElementById('counter').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('progress-bar').style.width = (idx / total * 100) + '%';
+  document.getElementById('section-badge').textContent = q.section;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = '';
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.disabled = true;
+  nextBtn.textContent = idx + 1 < total ? '次の問題 →' : '結果を見る';
+
+  // 全エリア非表示
+  document.getElementById('input-row').style.display = 'none';
+  document.getElementById('choices').style.display = 'none';
+  document.getElementById('ox-row').style.display = 'none';
+
+  if (q.type === 'text') {
+    document.getElementById('input-row').style.display = 'flex';
+    const inp = document.getElementById('ans-input');
+    inp.value = ''; inp.className = '';
+    inp.placeholder = '答えを入力'; inp.disabled = false;
+    const showBtn = document.getElementById('show-ans-btn');
+    showBtn.textContent = '答えを見る';
+    showBtn.onclick = () => {
+      showing = !showing;
+      inp.placeholder = showing ? q.ans : '答えを入力';
+      showBtn.textContent = showing ? '隠す' : '答えを見る';
+    };
+    inp.focus();
+
+  } else if (q.type === 'choice') {
+    const box = document.getElementById('choices');
+    box.style.display = 'flex';
+    box.innerHTML = '';
+    shuffle(q.choices).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c;
+      btn.addEventListener('click', () => handleChoice(c, q.ans));
+      box.appendChild(btn);
+    });
+
+  } else if (q.type === 'ox') {
+    document.getElementById('ox-row').style.display = 'flex';
+    document.querySelectorAll('.ox-btn').forEach(b => {
+      b.classList.remove('selected-maru','selected-batsu');
+      b.disabled = false;
+    });
+  }
+}
+
+// テキスト入力リアルタイム
+document.getElementById('ans-input').addEventListener('input', () => {
+  if (answered) return;
+  const q = questions[order[idx]];
+  const inp = document.getElementById('ans-input');
+  const uv = normalize(inp.value);
+  const cv = normalize(q.ans);
+  const ok = uv === cv || (cv.includes(uv) && uv.length >= cv.length - 1 && uv.length >= 2);
+  if (ok) {
+    answered = true; correct++;
+    inp.classList.add('correct-input'); inp.disabled = true;
+    showFeedback(true); document.getElementById('next-btn').disabled = false;
+  }
+});
+
+// 選択肢
+function handleChoice(selected, ans) {
+  if (answered) return;
+  answered = true;
+  const ok = selected === ans;
+  if (ok) correct++;
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === ans) btn.classList.add('correct-choice');
+    else if (btn.textContent === selected && !ok) btn.classList.add('wrong-choice');
+  });
+  showFeedback(ok, ok ? null : `正解：${ans}`);
+  document.getElementById('next-btn').disabled = false;
+}
+
+// ○×
+document.getElementById('btn-maru').addEventListener('click',  () => handleOX('○'));
+document.getElementById('btn-batsu').addEventListener('click', () => handleOX('×'));
+function handleOX(val) {
+  if (answered) return;
+  answered = true;
+  const q = questions[order[idx]];
+  const ok = val === q.ans;
+  if (ok) correct++;
+  document.getElementById('btn-maru').disabled = true;
+  document.getElementById('btn-batsu').disabled = true;
+  if (val === '○') document.getElementById('btn-maru').classList.add('selected-maru');
+  else document.getElementById('btn-batsu').classList.add('selected-batsu');
+  showFeedback(ok, ok ? null : `正解：${q.ans}`);
+  document.getElementById('next-btn').disabled = false;
+}
+
+function showFeedback(ok, extra) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = ok ? '✅ 正解！' : `❌ 不正解　${extra || ''}`;
+  fb.className = ok ? 'correct-fb' : 'wrong-fb';
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (!answered) return;
+  idx++;
+  if (idx >= questions.length) showResult();
+  else loadQuestion();
+});
+
+document.getElementById('ans-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && answered) document.getElementById('next-btn').click();
+});
+
+function showResult() {
+  const total = questions.length;
+  const pct = Math.round(correct / total * 100);
+  document.getElementById('q-card').style.display = 'none';
+  document.getElementById('counter').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('progress-bar').style.width = '100%';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  document.getElementById('result-score').textContent = `${pct}%`;
+  document.getElementById('result-sub').textContent = `${correct} / ${total} 問正解`;
+  const msg = pct===100?'🎉 満点！完璧です！':pct>=80?'👏 よくできました！':pct>=60?'📚 もう少し復習しましょう！':'💪 法律まとめを見直してもう一度！';
+  document.getElementById('result-msg').textContent = msg;
+  setTimeout(() => { document.getElementById('result-bar').style.width = pct + '%'; }, 100);
+  rs.scrollIntoView({ behavior: 'smooth' });
+}
+
+startQuiz();
+</script>
+</body>
+</html>
